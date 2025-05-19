@@ -25,7 +25,7 @@
 ## 🛠️ Usage
 
 ```bash
-python test.py 
+python run.py 
 ```
 
 
