@@ -3,6 +3,7 @@
 ## 📄 Project Overview
 
 > This repository provides a Python script that automates web interactions using **SeleniumBase** and bypasses Cloudflare protections. It’s designed for **traffic generation** on Cloudflare-protected sites.
+> Keywords: Bypass Cloudflare, traffic generation, SeleniumBase
 
 ---
 
