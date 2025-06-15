@@ -1,0 +1,18 @@
+/*************************************************************************
+* ADOBE CONFIDENTIAL
+* ___________________
+*
+*  Copyright 2015 Adobe Systems Incorporated
+*  All Rights Reserved.
+*
+* NOTICE:  All information contained herein is, and remains
+* the property of Adobe Systems Incorporated and its suppliers,
+* if any.  The intellectual and technical concepts contained
+* herein are proprietary to Adobe Systems Incorporated and its
+* suppliers and are protected by all applicable intellectual property laws,
+* including trade secret and or copyright laws.
+* Dissemination of this information or reproduction of this material
+* is strictly forbidden unless prior written permission is obtained
+* from Adobe Systems Incorporated.
+**************************************************************************/
+let isCursorOnPopup=!1;const isGoogleSearchLink=checkGoogleSearchLink();function showPopup(e){if(!document.getElementById("__assistantPopup__")){let t=e.getBoundingClientRect(),o=document.createElement("iframe");o.id="__assistantPopup__",o.style.cssText=`\n            border: 0;\n            z-index: 2147483647;\n            position: absolute;\n            margin: auto;\n            background: transparent;\n            color-scheme: auto;\n            left: ${t.left+scrollX-8}px;\n            top: ${t.bottom+scrollY}px;\n            width: auto;\n            min-height: unset;\n        `,o.src=chrome.runtime.getURL("browser/js/assistantPopup.html"),document.body.appendChild(o),o.addEventListener("mouseenter",(()=>{isCursorOnPopup=!0,chrome.runtime.sendMessage({main_op:"save-pdf-marker-target",pdfMarkerLink:e.href}),console.log("pdfMarkerLink",e.href)})),o.addEventListener("mouseleave",(()=>{setTimeout((()=>isCursorOnPopup=!1),100),hidePopup()}))}}function hidePopup(){const e=document.getElementById("__assistantPopup__");e&&e.remove()}function checkGoogleSearchLink(){const e=window.location.href;return/https:\/\/www\.google\.(com|co.[a-z]{2})\/search\?/.test(e)&&e.includes("q=")}function allignIconWithLink(e,t){const o=e.querySelector("h3");o.style.display="flex",o.appendChild(t)}function addPdfIconToLinks(){document.querySelectorAll("a[href]").forEach((e=>{if(e.getAttribute("href").match(/\.pdf(?:\?[^#]*)?(?:#.*)?$/i)&&e.textContent.trim().length>0){if(isGoogleSearchLink){const t=document.createElement("img");t.src=chrome.runtime.getURL("browser/images/SDC_GenAIGradientTrefoil_24_N.svg"),t.alt="PDF icon",t.style.width="24px",t.style.height="24px",t.style.marginLeft="8px",allignIconWithLink(e,t)}let t;e.addEventListener("mouseenter",(()=>{t=setTimeout((()=>showPopup(e)),isGoogleSearchLink?1e3:500)})),e.addEventListener("mouseleave",(()=>{setTimeout((()=>!isCursorOnPopup&&hidePopup()),100),clearTimeout(t)}))}}))}!async function(){const e=Array.from(document.querySelectorAll("a[href]")).some((e=>e.getAttribute("href").match(/\.pdf(?:\?[^#]*)?(?:#.*)?$/i)&&e.textContent.trim().length>0));chrome.runtime.sendMessage({main_op:"resolve-has-pdf-promise",hasPDFLink:e});const t="true"===(await chrome.storage.managed.get("DisableGenAI"))?.DisableGenAI,o="false"===(await chrome.storage.local.get("pdfViewer"))?.pdfViewer,n="false"===(await chrome.storage.local.get("egaf"))?.egaf,a="false"===(await chrome.storage.local.get("aiMarkers"))?.aiMarkers,r=await chrome.runtime.sendMessage({main_op:"getFloodgateFlag",flag:"dc-cv-genai-markers-internal",cachePurge:"NO_CALL"}),i=await chrome.runtime.sendMessage({main_op:"getFloodgateMeta",flag:"dc-cv-genai-markers-allowlist"});let s;try{s=JSON.parse(i||"[]").some((e=>window.location.href.match(e)))}catch(e){s=!1}t||o||n||a||!r||!s||addPdfIconToLinks()}();

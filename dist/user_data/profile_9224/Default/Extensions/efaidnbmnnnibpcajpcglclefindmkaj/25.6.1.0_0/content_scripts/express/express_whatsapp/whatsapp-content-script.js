@@ -1,0 +1,18 @@
+/*************************************************************************
+* ADOBE CONFIDENTIAL
+* ___________________
+*
+*  Copyright 2015 Adobe Systems Incorporated
+*  All Rights Reserved.
+*
+* NOTICE:  All information contained herein is, and remains
+* the property of Adobe Systems Incorporated and its suppliers,
+* if any.  The intellectual and technical concepts contained
+* herein are proprietary to Adobe Systems Incorporated and its
+* suppliers and are protected by all applicable intellectual property laws,
+* including trade secret and or copyright laws.
+* Dissemination of this information or reproduction of this material
+* is strictly forbidden unless prior written permission is obtained
+* from Adobe Systems Incorporated.
+**************************************************************************/
+class WhatsappExpressIntegration{previewEntryPointId="whatsapp-preview-adobe-express-entry-point";previewedImageClassname="x6s0dn4 x78zum5 x5yr21d xl56j7k x6ikm8r x10wlt62 x1n2onr6 xh8yej3 xhtitgo _ao3e";previewHeaderClassname="x78zum5 x6s0dn4 x1afcbsf x1totv3y";dropDownCTASourcePath="content_scripts/express/dropdown-menu.js";singleCTASourcePath="content_scripts/express/single-click-cta.js";touchpoint="whatsappPreview";launchExpress=(e,t)=>{chrome.runtime.sendMessage({main_op:"launch-express",imgUrl:e,intent:t,touchpoint:this.touchpoint})};sendAnalyticsEvent=e=>{try{chrome.runtime.sendMessage({main_op:"analytics",analytics:e})}catch(e){}};sendErrorLog=(e,t)=>{chrome.runtime.sendMessage({main_op:"log-error",log:{message:e,error:t}})};async loadContentScripts(){const e=this.config.singleCTAEnabled?this.singleCTASourcePath:this.dropDownCTASourcePath,t=chrome.runtime.getURL(e),s=await Promise.all([import(t)]);this.expressCTA=s[0].default}addThumbnailAndImagePreviewerObserver=()=>{new MutationObserver((()=>{this.imagePreviewerObserverHandler()})).observe(document.body,{childList:!0,subtree:!0})};previewEntryPointClickHandler=e=>{if(!chrome?.runtime?.id)return void this.removePreviewEntryPoint(this.previewEntryPointId);const t=document.getElementsByClassName(this.previewedImageClassname)[0];if(!t||"IMG"!==t.tagName)return void this.sendErrorLog("Error executing express in whatsapp","image element not found");const s=t.src;s?this.launchExpress(s,e):this.sendErrorLog("Error executing express in whatsapp","image URL not found")};imagePreviewerObserverHandler=()=>{const e=document.getElementsByClassName(this.previewHeaderClassname)[0];if(!e)return;const t=document.getElementById(this.previewEntryPointId),s=document.getElementsByClassName(this.previewedImageClassname)[0];s&&"IMG"===s.tagName?t||(chrome?.runtime?.id?(this.addPreviewEntryPoint(e,this.previewEntryPointId,this.previewEntryPointClickHandler),this.sendAnalyticsEvent([["DCBrowserExt:Express:Whatsapp:PreviewEntryPoint:Shown"]])):this.removePreviewEntryPoint(this.previewEntryPointId)):t?.remove()};addPreviewEntryPoint=async(e,t,s)=>{if(document.getElementById(t))return;const n=await this.expressCTA.renderMenuButton(s,this.touchpoint);n.id=t,e.insertBefore(n,e.firstChild)};removePreviewEntryPoint=e=>{const t=document.getElementById(e);t&&t.remove()};init=async()=>{const e=await chrome.runtime.sendMessage({main_op:"whatsapp-express-init"});this.config=e,this.config.enableWhatsappPreviewExpressMenu&&(this.previewedImageClassname=this.config.selectors?.previewedImageClassname||this.previewedImageClassname,this.previewHeaderClassname=this.config.selectors?.previewHeaderClassname||this.previewHeaderClassname,await this.loadContentScripts(),this.addThumbnailAndImagePreviewerObserver())}}const whatsappExpressIntegration=new WhatsappExpressIntegration;whatsappExpressIntegration.init();
